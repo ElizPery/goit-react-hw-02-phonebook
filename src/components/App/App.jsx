@@ -8,68 +8,79 @@ class App extends Component {
   state = {
     contacts: [
       { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
-      {id: 'id-2', name: 'Hermione Kline', number: '443-89-12'},
-      {id: 'id-3', name: 'Eden Clements', number: '645-17-79'},
-      { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' }
+      { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
+      { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
+      { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
     ],
-    filter: ''
+    filter: '',
   };
 
-  handleSubmit = (event) => {
-    event.preventDefault()
-
+  addContact = ({ name, number }) => {
+    const { contacts } = this.state;
     const newUser = {
-      'name': event.currentTarget.elements.name.value,
-      'number': event.currentTarget.elements.number.value,
-      'id': nanoid()
+      name,
+      number,
+      id: nanoid(),
+    };
+
+    if (
+      contacts.find(
+        contact =>
+          contact.name.toLocaleLowerCase() ===
+            newUser.name.toLocaleLowerCase() ||
+          contact.number === newUser.number
+      )
+    ) {
+      alert(`${newUser.name} or ${newUser.number} is already in contacts`);
+      return;
     }
 
-    const userAlreadyExist = this.state.contacts.filter(contact => {
-      return contact.name.toLocaleLowerCase() === newUser.name.toLocaleLowerCase()
+    this.setState(prevState => {
+      return { contacts: [...prevState.contacts, newUser] };
     });
+  };
 
-    if (userAlreadyExist.length !== 0) {
-      alert(`${newUser.name} is already in contacts`);
-      return
-    }
-
-    this.setState((prevState)=>{
-      return { contacts: [...prevState.contacts, newUser] }
-    })
-
-    event.currentTarget.reset();
-  }
-
-  handleChangeData = event => {
+  handleChangeData = ({ currentTarget }) => {
+    const { name, value } = currentTarget;
     this.setState({
-      [event.currentTarget.name]: event.currentTarget.value,
-    })
-  }
+      [name]: value,
+    });
+  };
 
   handleFilter = () => {
     const filterData = this.state.filter.toLocaleLowerCase().trim();
 
-    return this.state.contacts.filter(contact => 
-      contact.name.toLocaleLowerCase().includes(filterData))
-  }
+    return this.state.contacts.filter(contact =>
+      contact.name.toLocaleLowerCase().includes(filterData)
+    );
+  };
 
-  handleDeleteContact = (id) => {
-    this.setState((prevState) => ({
-      contacts: prevState.contacts.filter((element) => element.id !== id)
-    }))
-  }
+  handleDeleteContact = id => {
+    this.setState(prevState => ({
+      contacts: prevState.contacts.filter(element => element.id !== id),
+    }));
+  };
 
   render() {
     const visibleContacts = this.handleFilter();
+    const { filter } = this.state;
 
-    return <div>
+    return (
+      <div>
         <h1>Phonebook</h1>
-        <ContactForm onSubmit={this.handleSubmit} />
+        <ContactForm onSubmit={this.addContact} />
         <h2>Contacts</h2>
-        <Filter inputValue={this.state.filter} onChangeData={this.handleChangeData} />
-        <ContactList contacts={visibleContacts} deleteContact={this.handleDeleteContact} />
-    </div>
-  };
-};
+        <Filter
+          inputValue={filter}
+          onChangeData={this.handleChangeData}
+        />
+        <ContactList
+          contacts={visibleContacts}
+          deleteContact={this.handleDeleteContact}
+        />
+      </div>
+    );
+  }
+}
 
 export default App;
